@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/ichyycc/gin-demo/models"
@@ -8,7 +10,6 @@ import (
 	"github.com/ichyycc/gin-demo/pkg/setting"
 	"github.com/ichyycc/gin-demo/pkg/util"
 	"github.com/unknwon/com"
-	"net/http"
 )
 
 // GetTags 获取多个文章标签
@@ -41,20 +42,20 @@ func GetTags(ctx *gin.Context) {
 }
 
 // AddTag 新增文章标签
-func AddTag(ctx *gin.Context) {
-	name := ctx.Query("name")
-	state := com.StrTo(ctx.DefaultQuery("state", "0")).MustInt()
-	createdBy := ctx.Query("created_by")
+func AddTag(c *gin.Context) {
+	name := c.Query("name")
+	state := com.StrTo(c.DefaultQuery("state", "0")).MustInt()
+	createdBy := c.Query("created_by")
 
 	valid := validation.Validation{}
 	valid.Required(name, "name").Message("名称不能为空")
 	valid.MaxSize(name, 100, "name").Message("名称最长为100字符")
 	valid.Required(createdBy, "created_by").Message("创建人不能为空")
 	valid.MaxSize(createdBy, 100, "created_by").Message("创建人最长为100字符")
-	valid.Range(state, 0, 1, "state").Message("状态只允许为0或1")
+	valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
 
 	code := e.INVALID_PARAMS
-	if valid.HasErrors() {
+	if !valid.HasErrors() {
 		if !models.ExistTagByName(name) {
 			code = e.SUCCESS
 			models.AddTag(name, state, createdBy)
@@ -63,12 +64,11 @@ func AddTag(ctx *gin.Context) {
 		}
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"code": code,
 		"msg":  e.GetMsg(code),
 		"data": make(map[string]string),
 	})
-
 }
 
 // EditTag 修改文章标签
