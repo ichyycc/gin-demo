@@ -42,10 +42,10 @@ func GetTags(ctx *gin.Context) {
 }
 
 // AddTag 新增文章标签
-func AddTag(c *gin.Context) {
-	name := c.Query("name")
-	state := com.StrTo(c.DefaultQuery("state", "0")).MustInt()
-	createdBy := c.Query("created_by")
+func AddTag(ctx *gin.Context) {
+	name := ctx.Query("name")
+	state := com.StrTo(ctx.DefaultQuery("state", "0")).MustInt()
+	createdBy := ctx.Query("created_by")
 
 	valid := validation.Validation{}
 	valid.Required(name, "name").Message("名称不能为空")
@@ -64,7 +64,7 @@ func AddTag(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"code": code,
 		"msg":  e.GetMsg(code),
 		"data": make(map[string]string),
